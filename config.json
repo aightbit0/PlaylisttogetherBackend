@@ -1,0 +1,13 @@
+{
+    "dbname":"mydb",
+    "user":"root",
+    "password":"somepassword",
+    "port":"3306",
+    "url":"example.com",
+    "type":"mysql",
+    "secret":"somesecretkey",
+    "host":"",
+    "hostport":"8080",
+    "headers":true,
+    "expireTime": 7200
+}
