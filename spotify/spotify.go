@@ -50,50 +50,6 @@ func (s *SpotifyCredentials) getAccessToken() error {
 	return nil
 }
 
-// Searcher
-func (s *SpotifyCredentials) Searcher(rw http.ResponseWriter, req *http.Request) {
-	if *s.headerFlag {
-		(rw).Header().Set("Access-Control-Allow-Origin", "*")
-		(rw).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		(rw).Header().Set("Access-Control-Allow-Headers", "*")
-	}
-	keys, ok := req.URL.Query()["v"]
-
-	if !ok || len(keys[0]) < 1 {
-		fmt.Println("Url Param 'key' is missing")
-		return
-	}
-	key := keys[0]
-	fin, statuscode, err := s.getSong(string(key))
-
-	if err != nil {
-		fmt.Println("FAILED GET SONG")
-		return
-	}
-
-	// renew Access Token
-	if statuscode == 401 {
-
-		fmt.Println("REQUESTING NEW ACESS TOKEN")
-
-		err := s.getAccessToken()
-
-		if err != nil {
-			fmt.Println("FAIL TO RENEW ACCESS TOKEN")
-			return
-		}
-
-		fin, statuscode, err = s.getSong(string(key))
-
-		if err != nil || statuscode == 401 {
-			fmt.Println("FAILED GET SONG")
-			return
-		}
-	}
-
-	rw.Write(fin)
-}
-
 func (s *SpotifyCredentials) getSong(value string) ([]byte, int, error) {
 	req, err := http.NewRequest("GET", "https://api.spotify.com/v1/search?q="+url.QueryEscape(value)+"&type=track&market=US&limit=10&offset=0", nil)
 	req.Header.Set("Accept", "application/json")
@@ -133,5 +89,5 @@ func (s *SpotifyCredentials) getSong(value string) ([]byte, int, error) {
 		return nil, 0, err
 	}
 
-	return end, 0, nil
+	return end, resp.StatusCode, nil
 }
