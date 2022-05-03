@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"playlisttogether/backend/config"
+	"playlisttogether/backend/memories"
 	"playlisttogether/backend/playlist"
 	"playlisttogether/backend/spotify"
 	"time"
@@ -45,6 +46,8 @@ func Serve(conf *config.Config, db *sql.DB) {
 	tvr.HandleFunc("/createplaylist", playlist.CreatePlaylist(db))
 	tvr.HandleFunc("/getsonguris", playlistInstance.GetSongUris(db))
 	tvr.HandleFunc("/saveplaylist", playlistInstance.UpdatePlaylist(db))
+	//memories
+	tvr.HandleFunc("/getmemories", memories.GetMemories(db, conf.ImagePath))
 
 	//TODO
 	// rename Playlist endpoint

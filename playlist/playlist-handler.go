@@ -56,6 +56,7 @@ func (p *PlaylistCredentials) JwtMiddleware(db *sql.DB) mux.MiddlewareFunc {
 					fmt.Println("unguilty Token")
 					w.WriteHeader(http.StatusUnauthorized)
 					w.Write([]byte("Unauthorized"))
+					return
 				}
 				ctx := context.WithValue(r.Context(), "user", claims)
 				uid := database.CheckIfUserAuth(db, claims["name"].(string), "")

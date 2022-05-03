@@ -19,6 +19,7 @@ type Config struct {
 	HostPort   string `json:"hostport"`
 	Headers    bool   `json:"headers"`
 	ExpireTime int    `json:"expireTime"`
+	ImagePath  string `json:"imagePath"`
 }
 
 var (
