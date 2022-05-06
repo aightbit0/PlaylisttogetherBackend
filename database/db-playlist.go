@@ -77,10 +77,46 @@ func CheckIfSongDislike(db *sql.DB, id int, user string) (int, string, error) {
 	return 0, "", err
 }
 
-func SelectBucket(db *sql.DB, user string, plname string) ([]byte, error) {
+func SelectAmountActualBucket(db *sql.DB, user string, plname string) (int, error) {
+	var amount int
+	query := "select count(id) as am from playlist where user = ? and playlistname = ?"
+	row := db.QueryRow(query, user, plname)
+	err := row.Scan(&amount)
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return 0, nil
+	case nil:
+		return amount, nil
+
+	default:
+		fmt.Println(err)
+		return 0, err
+	}
+}
+
+func SelectAmountActualPlaylist(db *sql.DB, plname string) (int, error) {
+	var amount int
+	query := "select count(id) as am from playlist where  playlistname = ?"
+	row := db.QueryRow(query, plname)
+	err := row.Scan(&amount)
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return 0, nil
+	case nil:
+		return amount, nil
+
+	default:
+		fmt.Println(err)
+		return 0, err
+	}
+}
+
+func SelectBucket(db *sql.DB, user string, plname string, from int, to int) ([]byte, error) {
 	var array []Playlist
-	query := "select * from playlist WHERE user = ? and playlistname = ?"
-	rows, err := db.Query(query, user, plname)
+	query := "select * from playlist WHERE user = ? and playlistname = ? LIMIT ?,?"
+	rows, err := db.Query(query, user, plname, from, to)
 	if err != nil {
 		fmt.Println("Failed Select")
 		return nil, err
@@ -105,15 +141,22 @@ func SelectBucket(db *sql.DB, user string, plname string) ([]byte, error) {
 	}
 
 	amount, err := SelectAmount(db, user, plname)
+	bucketAmount, err2 := SelectAmountActualBucket(db, user, plname)
 
 	if err != nil {
 		fmt.Println("failed to get Amount")
 		return nil, err
 	}
 
+	if err2 != nil {
+		fmt.Println("failed to get Amount")
+		return nil, err2
+	}
+
 	var returnVal Bucket
 	returnVal.Data = array
 	returnVal.Amount = amount
+	returnVal.BucketActualAmount = bucketAmount
 
 	end, err := json.Marshal(returnVal)
 	if err != nil {
@@ -125,10 +168,10 @@ func SelectBucket(db *sql.DB, user string, plname string) ([]byte, error) {
 
 }
 
-func SelectPlaylist(db *sql.DB, plname string) ([]byte, error) {
+func SelectPlaylist(db *sql.DB, plname string, from int, to int) ([]byte, error) {
 	var array []Playlist
-	query := "select * from playlist where playlist = true and playlistname = ?"
-	rows, err := db.Query(query, plname)
+	query := "select * from playlist where playlist = true and playlistname = ?  LIMIT ?,?"
+	rows, err := db.Query(query, plname, from, to)
 	if err != nil {
 		fmt.Println("Failed Select")
 		return nil, err
@@ -152,7 +195,16 @@ func SelectPlaylist(db *sql.DB, plname string) ([]byte, error) {
 		return nil, err
 	}
 
-	end, err := json.Marshal(array)
+	bucketAmount, err2 := SelectAmountActualPlaylist(db, plname)
+	if err2 != nil {
+		return nil, err
+	}
+
+	var returnVal Bucket
+	returnVal.Data = array
+	returnVal.BucketActualAmount = bucketAmount
+
+	end, err := json.Marshal(returnVal)
 	if err != nil {
 		fmt.Println(("Failes Marshal"))
 		return nil, err

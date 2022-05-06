@@ -189,7 +189,7 @@ func (p *PlaylistCredentials) GetBucket(db *sql.DB) http.HandlerFunc {
 			rw.Write([]byte("JSON not valid"))
 		}
 
-		end, err := database.SelectBucket(db, t.User, t.PlaylistName)
+		end, err := database.SelectBucket(db, t.User, t.PlaylistName, t.From, t.To)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("Select has failed"))
@@ -218,7 +218,7 @@ func (p *PlaylistCredentials) GetPlaylist(db *sql.DB) http.HandlerFunc {
 			fmt.Println(err)
 		}
 
-		end, err := database.SelectPlaylist(db, t.PlaylistName)
+		end, err := database.SelectPlaylist(db, t.PlaylistName, t.From, t.To)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("Select has failed"))

@@ -6,50 +6,34 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
-	"playlisttogether/backend/utils"
 )
 
 func toBase64(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func getFilesPaths(destination string, foldername string) []byte {
-	var files []ImagesResponse
-	md5folder := utils.GetMD5Hash(foldername)
-	folderInfo, err1 := os.Stat(destination + md5folder)
+func getFilesPaths(destinations []string) []byte {
 
-	if os.IsNotExist(err1) {
-		fmt.Println("folder not exists")
-		fmt.Println(folderInfo)
-		end, err := json.Marshal(files)
+	var files []ImagesResponse
+
+	if len(destinations) == 0 {
+		end, err := json.Marshal([]ImagesResponse{})
 		if err != nil {
 			fmt.Println(("Failed Marshal"))
-
 		}
+
 		return end
 	}
 
-	err := filepath.Walk(destination+md5folder, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			base64response, err := readFile(path)
-			if err != nil {
-				fmt.Println("Failed to read File")
-				return nil
-			}
-
-			p := ImagesResponse{
-				Base64Code: base64response,
-			}
-			files = append(files, p)
+	for i := 0; i < len(destinations); i++ {
+		base64response, err := readFile(destinations[i])
+		if err != nil {
+			fmt.Println("Failed to read File")
 		}
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("fail")
+		p := ImagesResponse{
+			Base64Code: base64response,
+		}
+		files = append(files, p)
 	}
 
 	end, err := json.Marshal(files)
@@ -79,8 +63,6 @@ func readFile(file string) (string, error) {
 		base64Encoding += "data:image/png;base64,"
 	}
 	base64Encoding += toBase64(bytes)
-
-	//fmt.Println(base64Encoding)
 
 	return base64Encoding, nil
 }

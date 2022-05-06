@@ -6,4 +6,7 @@ type Auth struct {
 	ID           int    `json:"id"`
 	PlaylistName string `json:"playlistname"`
 	PlaylistUrl  string `json:"playlisturl"`
+
+	From int `json:"from"`
+	To   int `json:"to"`
 }

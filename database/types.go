@@ -41,6 +41,7 @@ type Users struct {
 }
 
 type Bucket struct {
-	Data   []Playlist `json:"data"`
-	Amount int        `json:"amount"`
+	Data               []Playlist `json:"data"`
+	Amount             int        `json:"amount"`
+	BucketActualAmount int        `json:"bucketActualAmount"`
 }

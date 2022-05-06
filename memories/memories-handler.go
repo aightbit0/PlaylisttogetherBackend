@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"playlisttogether/backend/database"
 	"playlisttogether/backend/playlist"
+	"playlisttogether/backend/utils"
 )
 
 type ImagesResponse struct {
@@ -31,8 +33,16 @@ func GetMemories(db *sql.DB, imgpath string) http.HandlerFunc {
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("JSON not valid"))
 		}
+		md5folder := utils.GetMD5Hash(t.PlaylistName)
 
-		allImages := getFilesPaths(imgpath, t.PlaylistName)
+		paths, err2 := database.SelectPictures(db, md5folder, t.From, t.To)
+		if err2 != nil {
+			fmt.Println("failed Selecting pictures")
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte("JSON not valid"))
+		}
+
+		allImages := getFilesPaths(paths)
 
 		rw.Write(allImages)
 	}
